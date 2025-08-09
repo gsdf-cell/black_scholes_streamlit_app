@@ -4,18 +4,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from black_scholes import BlackScholes
 
-#Monte Carlo Simulation
-def monte_carlo_option_price(S, K, T, sigma, r, simulations=10000, option_type="call"):
-    np.random.seed(42)  # Ensures consistent simulation results
-    Z = np.random.standard_normal(simulations)
-    ST = S * np.exp((r - 0.5 * sigma ** 2) * T + sigma * np.sqrt(T) * Z)
-    if option_type == "call":
-        payoffs = np.maximum(ST - K, 0)
-    else:
-        payoffs = np.maximum(K - ST, 0)
-    return np.exp(-r * T) * np.mean(payoffs)
-
-
 #Streamlit Configuration
 st.set_page_config(
     page_title = "Black-Scholes Option Pricing",
@@ -43,6 +31,15 @@ spot_range_slider = st.sidebar.slider(
     step=1.0
 )
 
+# Sidebar input for number of simulations
+num_simulations = st.sidebar.number_input(
+    "Monte Carlo Simulations", 
+    min_value=1000, 
+    max_value=500000, 
+    value=10000, 
+    step=1000
+)
+
 vol_range_slider = st.sidebar.slider(
     "Volatility Range (σ)",
     min_value = 0.01,
@@ -50,6 +47,17 @@ vol_range_slider = st.sidebar.slider(
     value=(sigma * 0.5, sigma * 1.5),
     step=0.01
 )
+
+#Monte Carlo Simulation
+def monte_carlo_option_price(S, K, T, sigma, r, simulations=num_simulations, option_type="call"):
+    np.random.seed(42)  # Ensures consistent simulation results
+    Z = np.random.standard_normal(simulations)
+    ST = S * np.exp((r - 0.5 * sigma ** 2) * T + sigma * np.sqrt(T) * Z)
+    if option_type == "call":
+        payoffs = np.maximum(ST - K, 0)
+    else:
+        payoffs = np.maximum(K - ST, 0)
+    return np.exp(-r * T) * np.mean(payoffs)
 
 # Create arrays of values to use for plotting
 spot_range = np.linspace(spot_range_slider[0], spot_range_slider[1], 10)
@@ -222,3 +230,32 @@ ax_line_put.legend()
 
 st.pyplot(fig_line_call)
 st.pyplot(fig_line_put)
+
+# Convergence analysis for Monte Carlo
+simulation_counts = [1000, 5000, 10000, 50000, 100000]
+mc_call_results = []
+mc_put_results = []
+
+for sims in simulation_counts:
+    mc_call_results.append(monte_carlo_option_price(S, K, T, sigma, r, simulations=sims, option_type="call"))
+    mc_put_results.append(monte_carlo_option_price(S, K, T, sigma, r, simulations=sims, option_type="put"))
+
+# Theoretical prices from Black-Scholes for reference
+bs_call_price, bs_put_price = bs.calculate_prices()
+
+# Plot convergence chart
+fig_conv, ax_conv = plt.subplots(figsize=(8, 6))
+ax_conv.plot(simulation_counts, mc_call_results, marker='o', label="Monte Carlo Call Price")
+ax_conv.plot(simulation_counts, mc_put_results, marker='o', label="Monte Carlo Put Price")
+ax_conv.axhline(bs_call_price, color='blue', linestyle='--', label="BS Call Price")
+ax_conv.axhline(bs_put_price, color='green', linestyle='--', label="BS Put Price")
+ax_conv.set_xscale('log')
+ax_conv.set_xlabel("Number of Simulations (log scale)")
+ax_conv.set_ylabel("Option Price (£)")
+ax_conv.set_title("Monte Carlo Convergence to Black-Scholes Price")
+ax_conv.legend()
+
+st.subheader("📉 Monte Carlo Convergence Analysis")
+st.write("This chart shows how Monte Carlo simulated prices approach the Black-Scholes price as the number of simulations increases.")
+st.pyplot(fig_conv)
+
