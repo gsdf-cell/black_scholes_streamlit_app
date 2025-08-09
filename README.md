@@ -7,7 +7,7 @@ Interactive Streamlit app to price **European call & put options** using:
 It lets you explore how **spot (S)**, **volatility (σ)**, **time to maturity (T)**, **strike (K)**, and **risk-free rate (r)** affect prices and **P&L** through heatmaps and payoff charts.
 
 ## Live Demo
-Url linke 
+https://blackscholesappapp-d2dyuzgvzpu3acdsqmk9xi.streamlit.app
 
 ## What’s inside the app:
 - **Theoretical prices** (Call & Put) via Black-Scholes  
