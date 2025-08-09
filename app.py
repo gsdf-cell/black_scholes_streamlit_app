@@ -31,6 +31,14 @@ spot_range_slider = st.sidebar.slider(
     step=1.0
 )
 
+vol_range_slider = st.sidebar.slider(
+    "Volatility Range (σ)",
+    min_value = 0.01,
+    max_value = 1.0,
+    value=(sigma * 0.5, sigma * 1.5),
+    step=0.01
+)
+
 # Sidebar input for number of simulations
 num_simulations = st.sidebar.number_input(
     "Monte Carlo Simulations", 
@@ -38,14 +46,6 @@ num_simulations = st.sidebar.number_input(
     max_value=500000, 
     value=10000, 
     step=1000
-)
-
-vol_range_slider = st.sidebar.slider(
-    "Volatility Range (σ)",
-    min_value = 0.01,
-    max_value = 1.0,
-    value=(sigma * 0.5, sigma * 1.5),
-    step=0.01
 )
 
 #Monte Carlo Simulation
